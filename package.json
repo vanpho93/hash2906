@@ -5,6 +5,7 @@
     "ejs": "^2.5.7",
     "express": "^4.15.3",
     "express-session": "^1.15.5",
+    "jsonwebtoken": "^7.4.1",
     "pg": "^7.0.2"
   },
   "name": "hash2906",
