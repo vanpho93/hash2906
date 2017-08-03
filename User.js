@@ -17,13 +17,13 @@ class User {
 
     async signIn() {
         // Neu ma nhap pass
-        const sql = 'SELECT password FROM "User" WHERE email = $1';
+        const sql = 'SELECT * FROM "User" WHERE email = $1';
         const result = await queryDB(sql, [this.email]);
         if (!result.rows[0]) throw new Error('Email khong ton tai');
         const hashPasswor = result.rows[0].password;
         const isValid = await compare(this.password, hashPasswor);
         if (!isValid) throw new Error('Sai password');
-        return true;
+        return { email: this.email, name: result.rows[0].name };
     }
 }
 
