@@ -12,18 +12,33 @@ app.use(cookieParser());
 
 app.get('/', (req, res) => res.render('home'));
 
-app.get('/private', (req, res) => {
-    const { token } = req.cookies;
-    if(!token) return res.redirect('/signin');
-    getObject(token)
-    .then(user => res.send(user))
-    .catch(err => res.redirect('/signin'));
+app.get('/private', checkToken, (req, res) => {
+    res.send(req.user);
 });
 
 function redirectIfLoggedIn(req, res, next) {
-    // TODO HERE
-    // Check if loggedIn
-    next();
+    const { token } = req.cookies;
+    if(!token) return next();
+    getObject(token)
+    .then(user => res.redirect('/private'))
+    .catch(err => {
+        res.clearCookie('token');
+        next();
+    });
+}
+
+const checkToken = async (req, res, next) => {
+    const { token } = req.cookies;
+    if(!token) return res.redirect('/signin');
+    try {
+        const user = await getObject(token);
+        req.user = user;
+        const newToken = await getToken({ name: user.name, email: user.email });
+        res.cookie('token', newToken);
+        next();
+    } catch(err) {
+        res.redirect('/signin');
+    } 
 }
 
 app.get('/signin', redirectIfLoggedIn, (req, res) => res.render('signin'));
