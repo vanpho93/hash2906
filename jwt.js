@@ -24,3 +24,5 @@ function getObject(token) {
 
 // getObject('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiUGhvIiwiaWF0IjoxNTAxNzcwMzU3LCJleHAiOjE1MDE3NzAzNzd9.QF38vWkKCTO8VkgGpikN3c-s58ss3LzKI0EAXpomH-E')
 // .then(obj => console.log(obj));
+
+module.exports = { getObject, getToken };

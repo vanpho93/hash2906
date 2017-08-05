@@ -1,38 +1,44 @@
 const express = require('express');
-const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const parser = require('body-parser').urlencoded({ extended: false });
 const User = require('./User');
+const { getObject, getToken } = require('./jwt');
 
 const app = express();
 app.set('view engine', 'ejs');
 app.set('views', './views');
 app.use(express.static('public'));
+app.use(cookieParser());
 
 app.get('/', (req, res) => res.render('home'));
 
 app.get('/private', (req, res) => {
-    // TODO HERE
-    // Check log status
+    const { token } = req.cookies;
+    if(!token) return res.redirect('/signin');
+    getObject(token)
+    .then(user => res.send(user))
+    .catch(err => res.redirect('/signin'));
 });
 
 function redirectIfLoggedIn(req, res, next) {
     // TODO HERE
     // Check if loggedIn
+    next();
 }
 
 app.get('/signin', redirectIfLoggedIn, (req, res) => res.render('signin'));
 app.get('/signup', redirectIfLoggedIn, (req, res) => res.render('signup'));
 
-app.post('/signin', redirectIfLoggedIn, parser, (req, res) => {
+app.post('/signin', redirectIfLoggedIn, parser, async (req, res) => {
     const { email, password } = req.body;
-    const user = new User(email, password);
-    user.signIn()
-    .then(user => {
-        // TODO HERE
-        // tao ra token, req.cookie
-        // res.send() or res.redirect
-    })
-    .catch(() => res.send('Dang nhap that bai'));
+    const signInUser = new User(email, password);
+    try {
+        const user = await signInUser.signIn();
+        const token = await getToken({ email: user.email, name: user.name });
+        res.cookie('token', token).send('Dang nhap thanh cong');
+    } catch (err) {
+        res.send('Dang nhap that bai');
+    }
 });
 
 app.post('/signup', redirectIfLoggedIn, parser, (req, res) => {
